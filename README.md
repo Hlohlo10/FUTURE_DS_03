@@ -54,7 +54,7 @@ Students and retired customers convert at the highest rates
 Previous successful subscribers convert at over 60% in subsequent campaigns
 
 ### Charts 
-![graphs campaign](graphs campaign.png)
+![graphs campaign](graphs_campaign.png)
 ![graphs demographics](graphs_demographics.png)
 ![graphs overview](graphs_overview.png)
 
