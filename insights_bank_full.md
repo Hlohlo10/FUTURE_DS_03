@@ -1,6 +1,6 @@
-# Bank Marketing Campaign — Funnel & Conversion Analysis
+# Bank Marketing Campaign- Funnel & Conversion Analysis
 ## Insights & Recommendations
-### Bank Marketing Dataset (bank-full.csv) — Future Interns Task 3
+### Bank Marketing Dataset (bank-full.csv) -Future Interns Task 3
 
 ---
 
@@ -13,7 +13,7 @@
 | Unknown job       | —       | 44,920  | 288     |
 | **Final clean**   | —       | **44,920** | —    |
 
----
+
 
 ## Key Numbers
 - Total Contacts:        44,920
@@ -23,7 +23,7 @@
 - Avg Call Duration:      ~4.3 minutes
 - Avg Calls per Contact:   2.6
 
----
+
 
 ## 1. Campaign Funnel Overview
 
@@ -41,7 +41,7 @@ cellular contacts, previous successful subscribers) would
 dramatically improve the conversion rate without increasing
 call volume.
 
----
+
 
 ## 2. Contact Channel Performance
 
@@ -58,7 +58,7 @@ For contacts where only a landline number is available, consider
 supplementing with email or SMS outreach before calling to warm
 up the lead.
 
----
+
 
 ## 3. Best Months to Call
 
@@ -76,7 +76,7 @@ focused campaigns in these months with a smaller, better
 targeted contact list will produce more subscriptions at
 lower cost.
 
----
+
 
 ## 4. Call Duration vs Conversion
 
@@ -93,7 +93,7 @@ rushing through scripts. Introduce quality monitoring to
 flag calls that drop below 2 minutes — these represent
 wasted effort where the agent is not engaging the customer.
 
----
+
 
 ## 5. Number of Calls vs Conversion
 
@@ -110,7 +110,7 @@ campaign. After 3 unsuccessful attempts, move the contact
 to a lower-cost channel (email, SMS) or a future campaign
 rather than continuing expensive outbound calls.
 
----
+
 
 ## 6. Best Job Segments
 
@@ -128,7 +128,7 @@ scripts that speak to their specific financial situations
 (savings goals, fixed income planning). Reduce call volume
 to blue-collar and services segments.
 
----
+
 
 ## 7. Previous Campaign Impact
 
@@ -146,7 +146,7 @@ called first as they represent the highest ROI with the
 least effort. Consider giving these contacts a loyalty
 incentive such as a preferential interest rate.
 
----
+
 
 ## 8. Age Group Analysis
 
@@ -164,7 +164,7 @@ with messaging around capital preservation and fixed
 returns. Both groups respond well to security-focused
 financial products.
 
----
+
 
 ## Summary of Key Recommendations
 
