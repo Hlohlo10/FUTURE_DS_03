@@ -9,7 +9,7 @@ print("Original shape:", df.shape)
 df = df.drop_duplicates()
 print("After removing duplicates:", df.shape)
 
-#Remove calls with zero duration (call never happened)
+#Remove calls with zero duration 
 df = df[df['duration'] > 0]
 print("After removing zero-duration calls:", df.shape)
 
