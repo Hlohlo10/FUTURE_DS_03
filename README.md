@@ -1,5 +1,5 @@
 # Marketing Funnel & Conversion Performance Analysis
-## Future Interns - Data Science & Analytics Task 2 
+## Future Interns - Data Science & Analytics Task 3
 
 ### Overview 
 This project analyzes a real-world bank direct marketing campaign dataset
