@@ -1,0 +1,72 @@
+import pandas as pd
+import numpy as np
+
+#loading the data 
+df = pd.read_csv('bank-full.csv', sep=';')
+print("Original shape:", df.shape)
+
+#Remove duplicates
+df = df.drop_duplicates()
+print("After removing duplicates:", df.shape)
+
+#Remove calls with zero duration (call never happened)
+df = df[df['duration'] > 0]
+print("After removing zero-duration calls:", df.shape)
+
+#Replace 'unknown' text with NaN for proper handling
+df = df.replace('unknown', np.nan)
+
+#Drop rows where job is unknown (only 288 rows — minimal loss)
+df = df.dropna(subset=['job'])
+print("After removing unknown job:", df.shape)
+
+#Fill education unknowns with most common value
+df['education'] = df['education'].fillna(df['education'].mode()[0])
+
+#Fill contact unknowns with most common value
+df['contact'] = df['contact'].fillna(df['contact'].mode()[0])
+
+#Fill poutcome unknowns — these are customers with no previous campaign
+df['poutcome'] = df['poutcome'].fillna('nonexistent')
+
+#Cap balance outliers at 99th percentile
+bal_cap = df['balance'].quantile(0.99)
+df['balance'] = df['balance'].clip(upper=bal_cap)
+print(f"Balance capped at: €{bal_cap:,.0f}")
+
+#Convert target to binary (1 = subscribed, 0 = not)
+df['converted'] = df['y'].apply(lambda x: 1 if x == 'yes' else 0)
+
+#Add call duration in minutes
+df['duration_minutes'] = (df['duration'] / 60).round(2)
+
+#Add age groups for analysis
+df['age_group'] = pd.cut(df['age'], bins=[17, 25, 35, 45, 55, 65, 100],
+                          labels=['18-25','26-35','36-45','46-55','56-65','65+'])
+
+#Add call number groups
+df['call_group'] = df['campaign'].apply(
+    lambda x: '1 call' if x == 1
+    else '2-3 calls' if x <= 3
+    else '4-5 calls' if x <= 5
+    else '6+ calls')
+
+# Add duration groups
+df['dur_group'] = pd.cut(df['duration'], bins=[0, 60, 180, 300, 600, 9999],
+                          labels=['<1 min','1-3 min','3-5 min','5-10 min','10+ min'])
+
+#Summary 
+print()
+print("=" * 45)
+print("CLEANING SUMMARY")
+print("=" * 45)
+print(f"Final shape:       {df.shape}")
+print(f"Total contacts:    {len(df):,}")
+print(f"Converted:         {df['converted'].sum():,}")
+print(f"Not converted:     {(df['converted']==0).sum():,}")
+print(f"Conv. rate:        {df['converted'].mean()*100:.2f}%")
+print(f"Remaining nulls:   {df.isnull().sum().sum()}")
+
+# Save
+df.to_csv('bank_clean.csv', index=False)
+print("\nDone! Clean file saved as bank_clean.csv")

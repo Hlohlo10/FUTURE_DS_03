@@ -1,0 +1,222 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import matplotlib.ticker as mticker
+from matplotlib.patches import Patch
+import warnings
+warnings.filterwarnings('ignore')
+
+#Colour palette 
+C_YES   = '#2E86AB'
+C_NO    = '#E84855'   
+C_GRAD  = ['#2E86AB', '#A8DADC', '#E84855']  
+
+#Loading the  clean data
+df = pd.read_csv('bank_clean.csv')
+
+df['age_group'] = pd.Categorical(df['age_group'],
+                                  categories=['18-25','26-35','36-45','46-55','56-65','65+'],
+                                  ordered=True)
+df['dur_group'] = pd.Categorical(df['dur_group'],
+                                  categories=['<1 min','1-3 min','3-5 min','5-10 min','10+ min'],
+                                  ordered=True)
+
+plt.rcParams.update({
+    'font.family': 'sans-serif',
+    'axes.spines.top': False,
+    'axes.spines.right': False,
+    'axes.grid': True,
+    'grid.alpha': 0.3,
+    'grid.linestyle': '--',
+})
+
+
+# FIGURE 1 – Overview (2 × 2)
+fig1, axes = plt.subplots(2, 2, figsize=(14, 10))
+fig1.suptitle('Bank Marketing Campaign – Overview', fontsize=16, fontweight='bold', y=1.01)
+
+#Conversion Rate Donut
+ax = axes[0, 0]
+sizes  = [df['converted'].sum(), (df['converted'] == 0).sum()]
+labels = [f"Subscribed\n{sizes[0]:,} ({sizes[0]/len(df)*100:.1f}%)",
+          f"Not Subscribed\n{sizes[1]:,} ({sizes[1]/len(df)*100:.1f}%)"]
+wedges, _ = ax.pie(sizes, colors=[C_YES, C_NO], startangle=90,
+                   wedgeprops=dict(width=0.55, edgecolor='white', linewidth=2))
+ax.legend(wedges, labels, loc='lower center', bbox_to_anchor=(0.5, -0.15),
+          fontsize=9, frameon=False)
+ax.set_title('Overall Conversion Rate', fontweight='bold')
+
+#Conversion Rate by Job
+ax = axes[0, 1]
+job_conv = (df.groupby('job')['converted'].mean() * 100).sort_values(ascending=True)
+bars = ax.barh(job_conv.index, job_conv.values,
+               color=[C_YES if v >= job_conv.mean() else C_NO for v in job_conv.values])
+ax.axvline(job_conv.mean(), color='grey', linestyle='--', linewidth=1, label=f'Avg {job_conv.mean():.1f}%')
+ax.set_xlabel('Conversion Rate (%)')
+ax.set_title('Conversion Rate by Job', fontweight='bold')
+ax.legend(fontsize=8)
+for bar, val in zip(bars, job_conv.values):
+    ax.text(val + 0.3, bar.get_y() + bar.get_height()/2, f'{val:.1f}%', va='center', fontsize=7.5)
+
+#Age Group Conversion Rate
+ax = axes[1, 0]
+age_conv = df.groupby('age_group', observed=True)['converted'].mean() * 100
+age_cnt  = df.groupby('age_group', observed=True)['converted'].count()
+colors   = [C_YES if v >= age_conv.mean() else C_NO for v in age_conv]
+bars     = ax.bar(age_conv.index.astype(str), age_conv.values, color=colors, edgecolor='white')
+ax.axhline(age_conv.mean(), color='grey', linestyle='--', linewidth=1)
+ax.set_ylabel('Conversion Rate (%)')
+ax.set_xlabel('Age Group')
+ax.set_title('Conversion Rate by Age Group', fontweight='bold')
+for bar, val, n in zip(bars, age_conv.values, age_cnt.values):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.2,
+            f'{val:.1f}%\n(n={n:,})', ha='center', va='bottom', fontsize=7.5)
+
+#Month Conversion Rate (calendar order)
+ax = axes[1, 1]
+month_order = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec']
+month_conv  = df.groupby('month')['converted'].mean() * 100
+month_conv  = month_conv.reindex([m for m in month_order if m in month_conv.index])
+ax.plot(month_conv.index.str.capitalize(), month_conv.values,
+        marker='o', color=C_YES, linewidth=2, markersize=6)
+ax.fill_between(range(len(month_conv)), month_conv.values, alpha=0.15, color=C_YES)
+ax.set_xticks(range(len(month_conv)))
+ax.set_xticklabels(month_conv.index.str.capitalize(), rotation=30, ha='right')
+ax.set_ylabel('Conversion Rate (%)')
+ax.set_title('Conversion Rate by Month', fontweight='bold')
+
+fig1.tight_layout()
+fig1.savefig('graphs_overview.png', dpi=150, bbox_inches='tight')
+print("Saved: graphs_overview.png")
+
+# FIGURE 2 – Campaign Behaviour
+fig2, axes = plt.subplots(2, 2, figsize=(14, 10))
+fig2.suptitle('Bank Marketing Campaign – Campaign Behaviour', fontsize=16, fontweight='bold', y=1.01)
+
+#Call Duration Group vs Conversion
+ax = axes[0, 0]
+dur_conv = df.groupby('dur_group', observed=True)['converted'].mean() * 100
+dur_cnt  = df.groupby('dur_group', observed=True)['converted'].count()
+colors   = plt.cm.Blues(np.linspace(0.35, 0.85, len(dur_conv)))
+bars     = ax.bar(dur_conv.index.astype(str), dur_conv.values, color=colors, edgecolor='white')
+ax.set_ylabel('Conversion Rate (%)')
+ax.set_xlabel('Call Duration')
+ax.set_title('Conversion Rate by Call Duration', fontweight='bold')
+for bar, val, n in zip(bars, dur_conv.values, dur_cnt.values):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
+            f'{val:.1f}%\n(n={n:,})', ha='center', va='bottom', fontsize=8)
+
+#Number of Calls vs Conversion
+ax = axes[0, 1]
+call_order = ['1 call','2-3 calls','4-5 calls','6+ calls']
+call_conv  = df.groupby('call_group')['converted'].mean() * 100
+call_conv  = call_conv.reindex(call_order)
+call_cnt   = df.groupby('call_group')['converted'].count().reindex(call_order)
+colors     = [C_YES if i == 0 else C_NO for i in range(len(call_conv))]
+bars       = ax.bar(call_conv.index, call_conv.values, color=colors, edgecolor='white')
+ax.set_ylabel('Conversion Rate (%)')
+ax.set_xlabel('Calls in Campaign')
+ax.set_title('Conversion Rate by Number of Calls', fontweight='bold')
+for bar, val, n in zip(bars, call_conv.values, call_cnt.values):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
+            f'{val:.1f}%\n(n={n:,})', ha='center', va='bottom', fontsize=8)
+
+#Call Duration Distribution (subscribers vs non-subscribers)
+ax = axes[1, 0]
+sub     = df[df['converted'] == 1]['duration_minutes'].clip(upper=20)
+non_sub = df[df['converted'] == 0]['duration_minutes'].clip(upper=20)
+bins    = np.linspace(0, 20, 40)
+ax.hist(non_sub, bins=bins, alpha=0.6, color=C_NO,   label='Not Subscribed', density=True)
+ax.hist(sub,     bins=bins, alpha=0.6, color=C_YES,  label='Subscribed',     density=True)
+ax.axvline(sub.mean(),     color=C_YES, linestyle='--', linewidth=1.5, label=f'Sub mean {sub.mean():.1f} min')
+ax.axvline(non_sub.mean(), color=C_NO,  linestyle='--', linewidth=1.5, label=f'Non-sub mean {non_sub.mean():.1f} min')
+ax.set_xlabel('Call Duration (minutes)')
+ax.set_ylabel('Density')
+ax.set_title('Call Duration Distribution by Outcome', fontweight='bold')
+ax.legend(fontsize=8)
+
+#Previous Outcome vs Current Conversion
+ax = axes[1, 1]
+pout_conv = df.groupby('poutcome')['converted'].mean() * 100
+pout_cnt  = df.groupby('poutcome')['converted'].count()
+color_map = {'success': C_YES, 'failure': C_NO, 'other': '#F4A261', 'nonexistent': '#ADB5BD'}
+bar_colors = [color_map.get(k, '#888') for k in pout_conv.index]
+bars = ax.bar(pout_conv.index.str.capitalize(), pout_conv.values, color=bar_colors, edgecolor='white')
+ax.set_ylabel('Conversion Rate (%)')
+ax.set_xlabel('Previous Campaign Outcome')
+ax.set_title('Current Conversion by Previous Outcome', fontweight='bold')
+for bar, val, n in zip(bars, pout_conv.values, pout_cnt.values):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
+            f'{val:.1f}%\n(n={n:,})', ha='center', va='bottom', fontsize=8)
+
+fig2.tight_layout()
+fig2.savefig('graphs_campaign.png', dpi=150, bbox_inches='tight')
+print("Saved: graphs_campaign.png")
+
+
+# FIGURE 3 – Demographics & Financials
+fig3, axes = plt.subplots(2, 2, figsize=(14, 10))
+fig3.suptitle('Bank Marketing Campaign – Demographics & Financials', fontsize=16, fontweight='bold', y=1.01)
+
+#Education conversion
+ax = axes[0, 0]
+edu_order = ['primary','secondary','tertiary']
+edu_conv  = df.groupby('education')['converted'].mean() * 100
+edu_conv  = edu_conv.reindex([e for e in edu_order if e in edu_conv.index])
+edu_cnt   = df.groupby('education')['converted'].count().reindex(edu_conv.index)
+bars = ax.bar(edu_conv.index.str.capitalize(), edu_conv.values,
+              color=[C_NO, '#F4A261', C_YES], edgecolor='white')
+ax.set_ylabel('Conversion Rate (%)')
+ax.set_title('Conversion Rate by Education Level', fontweight='bold')
+for bar, val, n in zip(bars, edu_conv.values, edu_cnt.values):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
+            f'{val:.1f}%\n(n={n:,})', ha='center', va='bottom', fontsize=9)
+
+#Marital status conversion
+ax = axes[0, 1]
+mar_conv = df.groupby('marital')['converted'].mean() * 100
+mar_cnt  = df.groupby('marital')['converted'].count()
+bars = ax.bar(mar_conv.index.str.capitalize(), mar_conv.values,
+              color=[C_YES, '#F4A261', C_NO][:len(mar_conv)], edgecolor='white')
+ax.set_ylabel('Conversion Rate (%)')
+ax.set_title('Conversion Rate by Marital Status', fontweight='bold')
+for bar, val, n in zip(bars, mar_conv.values, mar_cnt.values):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
+            f'{val:.1f}%\n(n={n:,})', ha='center', va='bottom', fontsize=9)
+
+#Balance distribution by outcome
+ax = axes[1, 0]
+sub     = df[df['converted'] == 1]['balance']
+non_sub = df[df['converted'] == 0]['balance']
+ax.boxplot([non_sub, sub], labels=['Not Subscribed', 'Subscribed'],
+           patch_artist=True,
+           boxprops=dict(facecolor='white'),
+           medianprops=dict(color='black', linewidth=2),
+           flierprops=dict(marker='.', markersize=2, alpha=0.3))
+ax.set_ylabel('Balance (€)')
+ax.set_title('Account Balance by Outcome', fontweight='bold')
+ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'€{x:,.0f}'))
+
+#Housing & Loan vs Conversion
+ax = axes[1, 1]
+cats   = ['Has Housing Loan', 'No Housing Loan', 'Has Personal Loan', 'No Personal Loan']
+vals   = [
+    df[df['housing'] == 'yes']['converted'].mean() * 100,
+    df[df['housing'] == 'no']['converted'].mean()  * 100,
+    df[df['loan']    == 'yes']['converted'].mean() * 100,
+    df[df['loan']    == 'no']['converted'].mean()  * 100,
+]
+colors = [C_NO, C_YES, C_NO, C_YES]
+bars   = ax.barh(cats, vals, color=colors, edgecolor='white')
+ax.set_xlabel('Conversion Rate (%)')
+ax.set_title('Conversion Rate by Loan Status', fontweight='bold')
+for bar, val in zip(bars, vals):
+    ax.text(val + 0.2, bar.get_y() + bar.get_height()/2, f'{val:.1f}%', va='center', fontsize=9)
+
+fig3.tight_layout()
+fig3.savefig('graphs_demographics.png', dpi=150, bbox_inches='tight')
+print("Saved: graphs_demographics.png")
+
+plt.show()
+print("\nAll 3 figures saved successfully.")
