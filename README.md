@@ -10,11 +10,9 @@ institution, covering campaigns run between May 2008 and November 2010.
 The goal was to predict and understand which customers subscribed to a
 bank term deposit after being contacted.
 
-### Tools Used 
-Python -Data cleaning and analysis
-Pandas -Data manipulation
-Matplotlib -Dashboard and chart creation
-VS Code -Development environment
+### Tools Used
+- Python (Pandas, Matplotlib)
+- VS Code
 
 ### Key Insights 
 - Overall conversion rate: 11.3%
