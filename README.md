@@ -2,7 +2,7 @@
 ## Future Interns - Data Science & Analytics Task 3
 
 ### Overview 
-This project analyzes a real-world bank direct marketing campaign dataset
+This project analyzes a real world bank direct marketing campaign dataset
 to identify conversion drop offs, channel performance, and opportunities to
 improve lead to customer conversion rates.
 The dataset contains 45,211 phone call records from a Portuguese banking
